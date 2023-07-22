@@ -53,14 +53,17 @@ class Code
 
 
         try {
+            $default = Variables::getAppPath("public","img","head.png");
             $image = Config::getConfig("login")["image"];
             $image = str_replace(Response::getHttpScheme() . Request::getDomain(),"",$image);
-            if (str_contains($image,"/clean_static")) {
+            if (str_starts_with($image,"/clean_static")) {
                 $image = str_replace("/clean_static", APP_DIR . DS . "app" . DS . "public", $image);
-            } else {
+            } elseif(str_starts_with($image,"http")) {
                 $image = str_replace("image", Variables::getStoragePath("uploads"), $image);
-
+            }else{
+                $image = $default;
             }
+
             header('Content-type: image/png');
 
             echo (new QRImageWithLogo($options, $qrcode->getQRMatrix()))->dump(null, $image);
