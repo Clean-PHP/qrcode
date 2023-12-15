@@ -13,9 +13,6 @@
 namespace library\qrcode;
 
 use cleanphp\App;
-use cleanphp\base\Config;
-use cleanphp\base\Request;
-use cleanphp\base\Response;
 use cleanphp\base\Variables;
 use cleanphp\file\Log;
 use ErrorException;
@@ -30,7 +27,7 @@ class Code
 {
 
 
-    static function encode(string $data)
+    static function encode(string $data, string $logo)
     {
         $data = empty($data) ? "empty data" : $data;
         $options = new QROptions([
@@ -53,16 +50,13 @@ class Code
 
 
         try {
-            $default = Variables::getAppPath("public","img","head.png");
-            $image = Config::getConfig("login")["image"];
-            $image = str_replace(Response::getHttpScheme() . Request::getDomain(),"",$image);
-            if (str_starts_with($image,"/clean_static")) {
-                $image = str_replace("/clean_static", APP_DIR . DS . "app" . DS . "public", $image);
-            } elseif(str_starts_with($image,"http")) {
-                $image = str_replace("image", Variables::getStoragePath("uploads"), $image);
-            }else{
-                $image = $default;
-            }
+            $path = parse_url($logo, PHP_URL_PATH);
+
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+
+            $image = Variables::getCachePath("logo.$extension");
+            file_put_contents($image, file_get_contents($logo));
+
 
             header('Content-type: image/png');
 
